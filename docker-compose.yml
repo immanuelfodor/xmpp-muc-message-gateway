@@ -1,0 +1,12 @@
+# @see: https://devhints.io/docker-compose
+version: "3"
+services:
+  xmpp-msg-gw:
+    build: .
+    image: xmpp-msg-gw:latest
+    container_name: xmpp-msg-gw
+    ports:
+     - "10080:5000"
+    environment:
+     - LOG_LEVEL=info
+    restart: unless-stopped
