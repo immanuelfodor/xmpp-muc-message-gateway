@@ -97,6 +97,25 @@ Anytime you modify anything in the config, you need to rebuild the image and rer
 
 **Tip**: Adjust the gateway's log level to higher verbosity with `LOG_LEVEL=debug` in a `docker-compose.override.yml` file.
 
+**Tip**: Use a [`curlrc`](https://ec.haxx.se/cmdline-configfile.html) file to store default config if sending POST requests from Bash:
+
+```bash
+cat > $HOME/.curlrc.xmpp <<EOF
+url = "http://ip-or-hostname:10080/post/MYTOKEN"
+header = "Content-Type: application/json"
+EOF
+
+curl -K $HOME/.curlrc.xmpp -d '{"hello":"curlrc"}'
+```
+
+When using in a crontab, you might want to replace `$HOME` with the absolute path of the file.
+
+**Tip**: Convert _anything_ to valid JSON with [`jq`](https://stedolan.github.io/jq/) (version `>=1.4`) using the following oneliner:
+
+```bash
+cat /etc/hosts | jq -R -s -c 'split("\n")' | curl -K $HOME/.curlrc.xmpp -d @-
+```
+
 ### Network topology
 
 You can put the gateway behind a reverse proxy preferably with an SSL cert from, e.g., Let's Encrypt. You can also host the XMPP message gateway on the same domain as your XMPP server by using a _subpath configuration_, for example, matching on the `/post/...` part of the URL, see the `push.py` in this repo for details. Of course, adding another _server block_ for a new subdomain is also convenient.
