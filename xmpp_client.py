@@ -26,6 +26,8 @@ class MUCBot(sleekxmpp.ClientXMPP):
         self.register_plugin('xep_0045')  # Multi-User Chat
         self.register_plugin('xep_0199')  # XMPP Ping
 
+        self.ssl_version = ssl.PROTOCOL_TLSv1_2
+
     def start(self, event):
         self.getRoster()
         self.sendPresence()
@@ -54,7 +56,6 @@ if __name__ == '__main__':
         logging.basicConfig(level=logging.DEBUG)
 
     xmpp = MUCBot(opts.jid, opts.password, opts.room, opts.nick, " ".join(args))
-    xmpp.ssl_version = ssl.PROTOCOL_TLSv1_2
 
     if xmpp.connect(reattempt=False):
         xmpp.process(threaded=False)

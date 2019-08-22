@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import ssl
 import traceback
 import yaml
 from dotenv import load_dotenv
@@ -96,7 +95,6 @@ def push_send(token):
     try:
         xmpp = MUCBot(os.environ['JID_FROM_USER'], os.environ['JID_FROM_PASS'],
                       known_rooms[token]['room'], known_rooms[token]['nick'], message)
-        xmpp.ssl_version = ssl.PROTOCOL_TLSv1_2
 
         if xmpp.connect(reattempt=False):
             xmpp.process(threaded=False)
