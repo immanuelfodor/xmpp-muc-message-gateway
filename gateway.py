@@ -1,8 +1,7 @@
-import json
+import gateway_helper as gwh
 import logging
 import os
 import traceback
-import yaml
 from dotenv import load_dotenv
 from flask import Flask, request, abort, jsonify
 from pathlib import Path
@@ -13,59 +12,11 @@ env_path = Path('.') / '.pyenv'
 load_dotenv(dotenv_path=env_path)
 logging.basicConfig(level=logging.getLevelName(os.environ['XMPP_LOG_LEVEL'].upper()))
 
-
-def error_handler(code):
-    """
-    Create a new Flask error handler dynamically. Returns the given error code and
-    a lambda function in a tuple which can be unpacked with * upon registering
-
-    :param: code int
-    :return: int, lambda
-    """
-
-    return code, lambda e: (jsonify(error=str(e)), code)
-
-
-def parse_known_rooms(rooms):
-    """
-    Parse a known rooms string (token:room@conf.host:nick [...]) to a Python dictionary
-    Keys are tokens, values are nested dicts of room JIDs and associated user nicks
-
-    :param: rooms string
-    :return: dict
-    """
-
-    known_rooms = {}
-
-    for pairs in rooms.split(' '):
-        valid_token, valid_room, nick = pairs.split(':')
-        known_rooms[valid_token] = {'room': valid_room, 'nick': nick}
-
-    return known_rooms
-
-
-def format_message(msg_format, request_json):
-    """
-    Prepares the incoming request.json object for the XMPP forward
-
-    :param: msg_format string
-    :param: request_json dict
-    :return: string
-    """
-
-    if msg_format == 'json':
-        return json.dumps(request_json, indent=2)  # ensure_ascii=False allows unicode chars
-    if msg_format == 'yaml':
-        return yaml.dump(request_json, indent=2, allow_unicode=True)
-
-    raise EnvironmentError
-
-
 app = Flask(__name__)
 for err_code in [400, 404, 415, 500]:
-    app.register_error_handler(*error_handler(err_code))
+    app.register_error_handler(*gwh.error_handler(err_code))
 
-known_rooms = parse_known_rooms(os.environ['KNOWN_ROOMS'])
+known_rooms = gwh.parse_known_rooms(os.environ['KNOWN_ROOMS'])
 
 
 @app.route('/post/<string:token>', methods=['POST'])
@@ -77,7 +28,7 @@ def push_send(token):
     :see: XMPP API docs: https://github.com/caronc/apprise/wiki/Notify_xmpp
     :see: XMPP implementation: https://github.com/caronc/apprise/blob/master/apprise/plugins/NotifyXMPP.py
     :param: token string
-    :return: JSON, status code
+    :return: string, int
     """
 
     app.logger.info('New message received')
@@ -88,7 +39,7 @@ def push_send(token):
         abort(404, description='Token mismatch')
 
     try:
-        message = format_message(os.environ['MESSAGE_FORMAT'], request.json)
+        message = gwh.format_message(os.environ['MESSAGE_FORMAT'], request.json)
     except:
         abort(415, description='Gateway configured with unknown message format')
 
