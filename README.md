@@ -1,6 +1,6 @@
-# XMPP Message Gateway
+# XMPP MUC Message Gateway
 
-A simple Docker-based microservice that forwards a JSON object received in an HTTP POST request to an XMPP MUC room ([XEP-0045](https://xmpp.org/extensions/xep-0045.html)) through a `TLSv1.2` client connection using the [SleekXMPP](https://sleekxmpp.readthedocs.io/en/latest/) Python lib. Supports multiple rooms and sender aliases with different associated URLs, e.g, one for Grafana, another for `curl`, and so on. Easy installation with `docker-compose`.
+A simple Docker-based microservice that forwards a JSON object received in an HTTP POST request to an XMPP MUC room ([XEP-0045](https://xmpp.org/extensions/xep-0045.html)) through a `TLSv1.2` client connection using the [SleekXMPP](https://sleekxmpp.readthedocs.io/en/latest/) Python lib. Supports multiple rooms and sender aliases with different associated URLs, e.g, one for Grafana, another for `curl`, and so on. Can convert JSON to YAML for better message readability. Easy installation with `docker-compose`.
 
 ## Table of contents <!-- omit in toc -->
 
@@ -56,6 +56,11 @@ export KNOWN_ROOMS="token1:room1@conf.host:nick1 token2:room2@conf.host:nick2 to
 # The log level of the XMPP lib can be different from the Gunicorn/Flash app
 # Defaults to the Docker env setting
 export XMPP_LOG_LEVEL="${LOG_LEVEL}"
+
+# Format of the XMPP message. Pretty printed, indented by 2 spaces. Supported values:
+#   - json: better portability of the original JSON, unicode characters are converted to \u1231 and such
+#   - yaml: better readability, unicode characters are allowed for better readability (avoid \u1231 and such chars in messages)
+export MESSAGE_FORMAT="json"
 ```
 
 ## Usage

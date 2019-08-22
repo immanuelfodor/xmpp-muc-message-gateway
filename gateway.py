@@ -1,10 +1,11 @@
+import json
 import logging
 import os
 import ssl
 import traceback
+import yaml
 from dotenv import load_dotenv
 from flask import Flask, request, abort, jsonify
-from json import dumps
 from pathlib import Path
 from xmpp_client import MUCBot
 
@@ -14,6 +15,21 @@ load_dotenv(dotenv_path=env_path)
 logging.basicConfig(level=logging.getLevelName(os.environ['XMPP_LOG_LEVEL'].upper()))
 
 app = Flask(__name__)
+
+
+@app.errorhandler(404)
+def resource_not_found(e):
+    return jsonify(error=str(e)), 404
+
+
+@app.errorhandler(415)
+def resource_not_found(e):
+    return jsonify(error=str(e)), 415
+
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return jsonify(error=str(e)), 500
 
 
 def parse_known_rooms():
@@ -33,14 +49,21 @@ def parse_known_rooms():
     return known_rooms
 
 
-@app.errorhandler(404)
-def resource_not_found(e):
-    return jsonify(error=str(e)), 404
+def format_message(request_json):
+    """
+    Prepares the incoming request.json object for the XMPP forward
+    according to the MESSAGE_FORMAT env setting
 
+    :param: request_json dict
+    :return: string
+    """
 
-@app.errorhandler(500)
-def internal_server_error(e):
-    return jsonify(error=str(e)), 500
+    if os.environ['MESSAGE_FORMAT'] == 'json':
+        return json.dumps(request.json, indent=2)  # ensure_ascii=False allows unicode chars
+    if os.environ['MESSAGE_FORMAT'] == 'yaml':
+        return yaml.dump(request.json, indent=2, allow_unicode=True)
+
+    raise EnvironmentError
 
 
 @app.route('/post/<string:token>', methods=['POST'])
@@ -63,7 +86,11 @@ def push_send(token):
         abort(404, description='Token mismatch')
 
     try:
-        message = dumps(request.json, indent=2)
+        message = format_message(request.json)
+    except:
+        abort(415, description='Gateway configured with unknown message format')
+
+    try:
         xmpp = MUCBot(os.environ['JID_FROM_USER'], os.environ['JID_FROM_PASS'],
                       known_rooms[token]['room'], known_rooms[token]['nick'], message)
         xmpp.ssl_version = ssl.PROTOCOL_TLSv1_2

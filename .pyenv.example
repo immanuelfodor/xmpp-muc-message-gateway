@@ -8,9 +8,14 @@ export JID_FROM_PASS="my-StroNG-pAssWOrd"
 # Can be a list of valid forward targets by separating every pair with a space
 # The same room with different token and nick lets you reuse the same user for multiple services
 # You can easily generate a Slack-like new token with running the following in bash:
-#   openssl rand -hex 20 | tr [a-z] [A-Z]
+#   openssl rand -hex 10 | tr [a-z] [A-Z]
 export KNOWN_ROOMS="token1:room1@conf.host:nick1 token2:room2@conf.host:nick2 token3:room1@conf.host:nick3"
 
 # The log level of the XMPP lib can be different from the Gunicorn/Flash app
 # Defaults to the Docker env setting
 export XMPP_LOG_LEVEL="${LOG_LEVEL}"
+
+# Format of the XMPP message. Pretty printed, indented by 2 spaces. Supported values:
+#   - json: better portability of the original JSON, unicode characters are converted to \u1231 and such
+#   - yaml: better readability, unicode characters are allowed for better readability (avoid \u1231 and such chars in messages)
+export MESSAGE_FORMAT="json"
