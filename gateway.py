@@ -14,56 +14,59 @@ env_path = Path('.') / '.pyenv'
 load_dotenv(dotenv_path=env_path)
 logging.basicConfig(level=logging.getLevelName(os.environ['XMPP_LOG_LEVEL'].upper()))
 
-app = Flask(__name__)
 
-
-@app.errorhandler(404)
-def resource_not_found(e):
-    return jsonify(error=str(e)), 404
-
-
-@app.errorhandler(415)
-def resource_not_found(e):
-    return jsonify(error=str(e)), 415
-
-
-@app.errorhandler(500)
-def internal_server_error(e):
-    return jsonify(error=str(e)), 500
-
-
-def parse_known_rooms():
+def error_handler(code):
     """
-    Parse the KNOWN_ROOMS env to a Python dictionary
+    Create a new Flask error handler dynamically. Returns the given error code and
+    a lambda function in a tuple which can be unpacked with * upon registering
+
+    :param: code int
+    :return: int, lambda
+    """
+
+    return code, lambda e: (jsonify(error=str(e)), code)
+
+
+def parse_known_rooms(rooms):
+    """
+    Parse a known rooms string (token:room@conf.host:nick [...]) to a Python dictionary
     Keys are tokens, values are nested dicts of room JIDs and associated user nicks
 
+    :param: rooms string
     :return: dict
     """
 
     known_rooms = {}
 
-    for pairs in os.environ['KNOWN_ROOMS'].split(' '):
+    for pairs in rooms.split(' '):
         valid_token, valid_room, nick = pairs.split(':')
         known_rooms[valid_token] = {'room': valid_room, 'nick': nick}
 
     return known_rooms
 
 
-def format_message(request_json):
+def format_message(msg_format, request_json):
     """
     Prepares the incoming request.json object for the XMPP forward
-    according to the MESSAGE_FORMAT env setting
 
+    :param: msg_format string
     :param: request_json dict
     :return: string
     """
 
-    if os.environ['MESSAGE_FORMAT'] == 'json':
-        return json.dumps(request.json, indent=2)  # ensure_ascii=False allows unicode chars
-    if os.environ['MESSAGE_FORMAT'] == 'yaml':
-        return yaml.dump(request.json, indent=2, allow_unicode=True)
+    if msg_format == 'json':
+        return json.dumps(request_json, indent=2)  # ensure_ascii=False allows unicode chars
+    if msg_format == 'yaml':
+        return yaml.dump(request_json, indent=2, allow_unicode=True)
 
     raise EnvironmentError
+
+
+app = Flask(__name__)
+for err_code in [400, 404, 415, 500]:
+    app.register_error_handler(*error_handler(err_code))
+
+known_rooms = parse_known_rooms(os.environ['KNOWN_ROOMS'])
 
 
 @app.route('/post/<string:token>', methods=['POST'])
@@ -86,7 +89,7 @@ def push_send(token):
         abort(404, description='Token mismatch')
 
     try:
-        message = format_message(request.json)
+        message = format_message(os.environ['MESSAGE_FORMAT'], request.json)
     except:
         abort(415, description='Gateway configured with unknown message format')
 
@@ -110,8 +113,6 @@ def push_send(token):
 
     return {'success': True}, 200
 
-
-known_rooms = parse_known_rooms()
 
 if __name__ == '__main__':
     app.logger.setLevel(1)
