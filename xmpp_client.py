@@ -33,7 +33,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
         self.plugin['xep_0045'].joinMUC(self.room, self.nick, wait=True)
 
         self.send_message(mto=self.room, mbody=self.message, mtype='groupchat')
-        time.sleep(2)
+        time.sleep(1)
         self.disconnect()
 
 
