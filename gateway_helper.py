@@ -1,5 +1,6 @@
 import json
 import yaml
+from flask import jsonify
 
 
 def error_handler(code):
