@@ -182,10 +182,11 @@ You can send test messages to see it in action, or experiment with the programma
 
 **This is an experimental project. I do not take responsibility for anything regarding the use or misuse of the contents of this repository.**
 
-Tested with Grafana webhooks and Prosody as an XMPP server, but in theory, it should work with any source capable of sending HTTP POST requests with valid JSON objects (e.g., `curl`).    
-The posted JSON object is formatted and indented by 2 spaces, no further processing is being made. The padded object's size is limited by your XMPP server's maximum stanza or body size.    
-[OMEMO](https://omemo.top/) is not yet supported in SleekXMPP by default, but there is an interesting project out there which worth exploring: [sleekxmpp-omemo-plugin](https://gitlab.com/ecartman/sleekxmpp-omemo-plugin)    
-`pyasn1` and `pyasn1-modules` are not included in the `requirements.txt` as optional SleekXMPP dependencies, so the SSL cert verification and expiration check won't work, see [this issue](https://github.com/fritzy/SleekXMPP/issues/477) for further info.
+- Tested with Grafana webhooks and Prosody as an XMPP server, but in theory, it should work with any source capable of sending HTTP POST requests with valid JSON objects (e.g., `curl`).
+- The posted JSON object is formatted and indented by 2 spaces, no further processing is being made. The padded object's size is limited by your XMPP server's maximum stanza or body size.
+- [OMEMO](https://omemo.top/) is not yet supported in SleekXMPP by default, but there is an interesting project out there which worth exploring: [sleekxmpp-omemo-plugin](https://gitlab.com/ecartman/sleekxmpp-omemo-plugin)
+- `pyasn1` and `pyasn1-modules` are not included in the `requirements.txt` as optional SleekXMPP dependencies, so the SSL cert verification and expiration check won't work, see [this issue](https://github.com/fritzy/SleekXMPP/issues/477) for further info.
+- If you use RocketChat, there is a similar project for that service here: [immanuelfodor/rocketchat-push-gateway](https://github.com/immanuelfodor/rocketchat-push-gateway)
 
 ## Contact
 
