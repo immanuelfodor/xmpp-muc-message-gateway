@@ -33,13 +33,17 @@ def push_send(token):
 
     app.logger.info('New message received')
     app.logger.debug(request.headers)
+    app.logger.debug(request.form)
     app.logger.debug(request.json)
 
     if token not in known_rooms.keys():
         abort(404, description='Token mismatch')
 
     try:
-        message = gwh.format_message(os.environ['MESSAGE_FORMAT'], request.json)
+        if request.json:
+            message = gwh.format_message(os.environ['MESSAGE_FORMAT'], request.json)
+        else:
+            message = gwh.format_message(os.environ['MESSAGE_FORMAT'], dict(request.form))
     except:
         abort(415, description='Gateway configured with unknown message format')
 
