@@ -1,6 +1,8 @@
 # XMPP MUC Message Gateway
 
-A simple Docker-based microservice that forwards a JSON object received in an HTTP POST request to an XMPP MUC room ([XEP-0045](https://xmpp.org/extensions/xep-0045.html)) through a `TLSv1.2` client connection using the [SleekXMPP](https://sleekxmpp.readthedocs.io/en/latest/) Python lib. Supports multiple rooms and sender aliases with different associated URLs, e.g, one for Grafana, another for `curl`, and so on. Can convert JSON to YAML for better message readability. Easy installation with `docker-compose`.
+A simple Docker-based microservice that forwards a JSON object received in an HTTP POST request to an XMPP MUC room ([XEP-0045](https://xmpp.org/extensions/xep-0045.html))
+through a `TLSv1.2` client connection using the [SliXMPP](https://github.com/poezio/slixmpp) Python lib. Supports multiple rooms and sender aliases with different
+associated URLs, e.g, one for Grafana, another for `curl`, and so on. Can convert JSON to YAML for better message readability. Easy installation with `docker-compose`.
 
 ## Table of contents <!-- omit in toc -->
 
@@ -27,11 +29,14 @@ sudo systemctl enable docker
 sudo systemctl start docker
 ```
 
-Of course, you'll also need a MUC-enabled [XMPP server](https://xmpp.org/software/servers.html) up and running with at least one MUC room and two users joined in the same room (the webhook user and _you_). Explaining setting these up is way beyond the scope of this document, so please see the online docs for proper instructions. They say [Prosody](http://prosody.im/) is beginner-friendly.
+Of course, you'll also need a MUC-enabled [XMPP server](https://xmpp.org/software/servers.html) up and running with at least one MUC room and two users joined
+in the same room (the webhook user and _you_). Explaining setting these up is way beyond the scope of this document, so please see the online docs for proper
+instructions. They say [Prosody](http://prosody.im/) is beginner-friendly.
 
 ## Configuration
 
-You can configure the gateway as you like, but you must have at least one valid XMPP user JID, password and an associated `token:room-JID:nick` combo in a `.pyenv` file to make it work.
+You can configure the gateway as you like, but you must have at least one valid XMPP user JID, password and an associated `token:room-JID:nick` combo in a
+`.pyenv` file to make it work.
 
 Create a copy of the example config file provided, and add the parameters according to the example:
 
@@ -118,9 +123,12 @@ cat /etc/hosts | jq -R -s -c 'split("\n")' | curl -K $HOME/.curlrc.xmpp -d @-
 
 ### Network topology
 
-You can put the gateway behind a reverse proxy preferably with an SSL cert from, e.g., Let's Encrypt. You can also host the XMPP message gateway on the same domain as your XMPP server by using a _subpath configuration_, for example, matching on the `/post/...` part of the URL, see the `push.py` in this repo for details. Of course, adding another _server block_ for a new subdomain is also convenient.
+You can put the gateway behind a reverse proxy preferably with an SSL cert from, e.g., Let's Encrypt. You can also host the XMPP message gateway on the same
+domain as your XMPP server by using a _subpath configuration_, for example, matching on the `/post/...` part of the URL, see the `push.py` in this repo for
+details. Of course, adding another _server block_ for a new subdomain is also convenient.
 
-Malicious actors could only send spam notifications if they would know any of your long and random tokens, otherwise, the messages are not routed to a valid XMPP MUC room. However, the following setup is desirable when we don't want to expose it to the open, and it's also easier to achieve.
+Malicious actors could only send spam notifications if they would know any of your long and random tokens, otherwise, the messages are not routed to a valid
+XMPP MUC room. However, the following setup is desirable when we don't want to expose it to the open, and it's also easier to achieve.
 
 If you host your message source, XMPP server and this gateway on the same network, you can use local hostnames, DNS or IP addresses to set everything up:
 - Add the gateway to the data source (e.g., [Grafana webhook](https://github.com/grafana/grafana/issues/6955#issuecomment-470900383)) with the gateway's local hostname/IP + port e.g., `http://10.0.0.80:10080/post/rANd0m-tOkEN`
@@ -184,8 +192,9 @@ You can send test messages to see it in action, or experiment with the programma
 
 - Tested with Grafana webhooks and Prosody as an XMPP server, but in theory, it should work with any source capable of sending HTTP POST requests with valid JSON objects (e.g., `curl`).
 - The posted JSON object is formatted and indented by 2 spaces, no further processing is being made. The padded object's size is limited by your XMPP server's maximum stanza or body size.
-- [OMEMO](https://omemo.top/) is not yet supported in SleekXMPP by default, but there is an interesting project out there which worth exploring: [sleekxmpp-omemo-plugin](https://gitlab.com/ecartman/sleekxmpp-omemo-plugin)
-- `pyasn1` and `pyasn1-modules` are not included in the `requirements.txt` as optional SleekXMPP dependencies, so the SSL cert verification and expiration check won't work, see [this issue](https://github.com/fritzy/SleekXMPP/issues/477) for further info.
+- 2020-04-11: Updated to SliXMPP, the successor of SleekXMPP, the following old notes are not validated with the new version:
+    - [OMEMO](https://omemo.top/) is not yet supported in SleekXMPP by default, but there is an interesting project out there which worth exploring: [sleekxmpp-omemo-plugin](https://gitlab.com/ecartman/sleekxmpp-omemo-plugin)
+    - `pyasn1` and `pyasn1-modules` are not included in the `requirements.txt` as optional SleekXMPP dependencies, so the SSL cert verification and expiration check won't work, see [this issue](https://github.com/fritzy/SleekXMPP/issues/477) for further info.
 - If you use RocketChat, there is a similar project for that service here: [immanuelfodor/rocketchat-push-gateway](https://github.com/immanuelfodor/rocketchat-push-gateway)
 
 ## Contact

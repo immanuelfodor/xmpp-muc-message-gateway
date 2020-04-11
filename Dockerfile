@@ -5,7 +5,11 @@ EXPOSE 5000
 ENV LOG_LEVEL=debug
 
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+
+RUN set -x && \
+    apk add --no-cache --virtual .build-deps gcc musl-dev libffi-dev && \
+    pip install --no-cache-dir -r requirements.txt && \
+    apk del .build-deps
 
 COPY .pyenv gateway.py gateway_helper.py xmpp_client.py ./
 

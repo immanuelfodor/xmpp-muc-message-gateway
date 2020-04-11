@@ -50,9 +50,8 @@ def push_send(token):
     try:
         xmpp = MUCBot(os.environ['JID_FROM_USER'], os.environ['JID_FROM_PASS'],
                       known_rooms[token]['room'], known_rooms[token]['nick'], message)
-
-        if xmpp.connect(reattempt=False):
-            xmpp.process(threaded=False)
+        xmpp.connect()
+        xmpp.process(forever=False)
 
         app.logger.info('Forwarded the received message as %s to %s',
                         known_rooms[token]['nick'], known_rooms[token]['room'])

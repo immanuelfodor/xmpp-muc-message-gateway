@@ -4,18 +4,19 @@ import ssl
 import sys
 import time
 
-import sleekxmpp
+import slixmpp
 
 
-class MUCBot(sleekxmpp.ClientXMPP):
+class MUCBot(slixmpp.ClientXMPP):
     """
-    Based on the SleekXMPP Mulit-User Chat (MUC) bot example
+    Based on the SliXMPP Mulit-User Chat (MUC) bot example
 
-    :see: http://sleekxmpp.com/getting_started/muc.html
+    :see: https://slixmpp.readthedocs.io/getting_started/muc.html
+    :see: https://github.com/poezio/slixmpp/blob/master/docs/getting_started/muc.rst
     """
 
     def __init__(self, jid, password, room, nick, message):
-        sleekxmpp.ClientXMPP.__init__(self, jid, password)
+        slixmpp.ClientXMPP.__init__(self, jid, password)
 
         self.room = room
         self.nick = nick
@@ -29,10 +30,10 @@ class MUCBot(sleekxmpp.ClientXMPP):
         self.ssl_version = ssl.PROTOCOL_TLSv1_2
 
     def start(self, event):
-        self.getRoster()
-        self.sendPresence()
+        self.get_roster()
+        self.send_presence()
 
-        self.plugin['xep_0045'].joinMUC(self.room, self.nick, wait=True)
+        self.plugin['xep_0045'].join_muc(self.room, self.nick, wait=True)
 
         self.send_message(mto=self.room, mbody=self.message, mtype='groupchat')
         time.sleep(1)
@@ -56,8 +57,5 @@ if __name__ == '__main__':
         logging.basicConfig(level=logging.DEBUG)
 
     xmpp = MUCBot(opts.jid, opts.password, opts.room, opts.nick, " ".join(args))
-
-    if xmpp.connect(reattempt=False):
-        xmpp.process(threaded=False)
-    else:
-        print("connect() failed")
+    xmpp.connect()
+    xmpp.process(forever=False)
