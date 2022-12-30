@@ -33,7 +33,11 @@ class MUCBot(slixmpp.ClientXMPP):
         self.get_roster()
         self.send_presence()
 
-        self.plugin['xep_0045'].join_muc(self.room, self.nick, wait=True)
+        # TODO: join_muc has been refactored in upstream since the creation of the gateway,
+        #   so instead of the original `wait=True`, we might need to use the new 
+        #   `join_muc_wait` function in the future if the wait is necessary.
+        #   @see: https://github.com/immanuelfodor/xmpp-muc-message-gateway/issues/3
+        self.plugin['xep_0045'].join_muc(self.room, self.nick)
 
         self.send_message(mto=self.room, mbody=self.message, mtype='groupchat')
         time.sleep(1)
